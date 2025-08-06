@@ -1,6 +1,6 @@
-# 浏览器使用代理
+# 基于 PPIO Agent 沙箱实现的简单 Browser-use Agent
 
-基于 [Browser-use](https://github.com/browser-use/browser-use) 的 AI 代理，可以执行网页自动化任务。
+基于 PPIO Agent 沙箱实现的简单 [Browser-use](https://github.com/browser-use/browser-use) Agent，可以执行网页自动化任务。
 
 ## 前置要求
 
