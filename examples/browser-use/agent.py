@@ -136,7 +136,7 @@ async def main():
     await browser_session.start()
 
     agent = Agent(
-      task="Go to google and search for browser-use information and summarize the results",
+      task="去百度搜索 Browser-use 的相关信息，并总结出 3 个使用场景",
       llm=ChatOpenAI(
         api_key=LLM_API_KEY,
         base_url=LLM_BASE_URL,
