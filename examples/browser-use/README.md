@@ -22,7 +22,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 # Windows:
-# .venv\Scripts\activate
+.venv\Scripts\activate
 ```
 
 ### 2. 安装依赖
