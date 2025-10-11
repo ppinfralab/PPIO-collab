@@ -4,17 +4,18 @@ import time
 import re
 import os
 import logging
+import base64
 from dotenv import load_dotenv
 load_dotenv()
 from browser_use import Agent, BrowserSession
 from browser_use.llm import ChatOpenAI
-from e2b_code_interpreter import Sandbox
-from playwright.async_api import Page
+from browser_use.actor import Page
+from ppio_sandbox.code_interpreter import Sandbox
 from urllib.parse import urlparse
 
 LLM_BASE_URL = os.getenv("LLM_BASE_URL")
 LLM_MODEL = os.getenv("LLM_MODEL")
-LLM_API_KEY = os.getenv("LLM_API_KEY")
+PPIO_API_KEY = os.getenv("PPIO_API_KEY")
 
 async def test_chrome_connection(host):
     """Test Chrome connection and get debug information"""
@@ -85,9 +86,14 @@ async def get_chrome_wss_url(host):
       print(f"/json/version endpoint failed: {e}")
       return None
 
-async def screenshot(playwright_page: Page, session_id: str, url: str):
+async def screenshot(page: Page, session_id: str, url: str):
   print("taking screenshot...")
-  screenshot_bytes = await playwright_page.screenshot(full_page=True, type='png')
+
+  screenshot_b64 = await page.screenshot(format='png')
+  
+  # Decode base64 to bytes
+  screenshot_bytes = base64.b64decode(screenshot_b64)
+  
   # Write screenshot_bytes to a PNG file in ./screenshots/{session_id}
   screenshots_dir = os.path.join(".", "screenshots", str(session_id))
   os.makedirs(screenshots_dir, exist_ok=True)
@@ -104,7 +110,7 @@ async def screenshot(playwright_page: Page, session_id: str, url: str):
 
 async def setp_end_hook(agent: Agent):
   page = await agent.browser_session.get_current_page()
-  current_url = page.url
+  current_url = await page.get_url()
   visit_log = agent.history.urls()
   previous_url = visit_log[-2] if len(visit_log) >= 2 else None
   print(f"Agent was last on URL: {previous_url} and is now on {current_url}")
@@ -113,7 +119,7 @@ async def setp_end_hook(agent: Agent):
 async def main():
   print(os.getenv("E2B_API_KEY"))
   print(os.getenv("E2B_DOMAIN"))
-  sandbox = Sandbox(
+  sandbox = Sandbox.create(
     timeout=600,  # seconds
     template="browser-chromium",
   )
@@ -132,13 +138,21 @@ async def main():
     
     browser_session = BrowserSession(
       cdp_url=cdp_url,
+      window_size={
+        "width": 1920,
+        "height": 1080
+      },
+      viewport={
+        "width": 1920,
+        "height": 1080
+      }
     )
     await browser_session.start()
 
     agent = Agent(
       task="去百度搜索 Browser-use 的相关信息，并总结出 3 个使用场景",
       llm=ChatOpenAI(
-        api_key=LLM_API_KEY,
+        api_key=PPIO_API_KEY,
         base_url=LLM_BASE_URL,
         model=LLM_MODEL,
         temperature=1.0
@@ -153,7 +167,7 @@ async def main():
       on_step_start=setp_end_hook,
       on_step_end=setp_end_hook
     )
-    await browser_session.close()
+    await browser_session.stop()
   finally:
     # Destroy sandbox
     sandbox.kill()
