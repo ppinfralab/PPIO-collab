@@ -1,6 +1,7 @@
 .venv
 .DS_Store
 screenshots/
+recordings/
 
 .env
 storage_*.json

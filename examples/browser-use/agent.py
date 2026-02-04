@@ -117,8 +117,8 @@ async def setp_end_hook(agent: Agent):
   await screenshot(page, agent.browser_session.id, current_url)
 
 async def main():
-  print(os.getenv("E2B_API_KEY"))
-  print(os.getenv("E2B_DOMAIN"))
+  print(os.getenv("PPIO_DOMAIN"))
+  print(os.getenv("PPIO_API_KEY"))
   sandbox = Sandbox.create(
     timeout=600,  # seconds
     template="browser-chromium",
